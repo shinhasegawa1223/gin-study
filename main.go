@@ -1,13 +1,25 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"gin-fleamarket/controller"
+	"gin-fleamarket/models"
+	"gin-fleamarket/repositories"
+	"gin-fleamarket/services"
+
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-  router := gin.Default()
-  router.GET("/ping", func(c *gin.Context) {
-    c.JSON(200, gin.H{
-      "message": "pong",
-    })
-  })
-  router.Run("localhost:8080") // デフォルトで0.0.0.0:8080で待機します
+	items := []models.Item{
+		{ID: 1, Name: "product1", Price: 100, Description: "description1", SoldOut: false},
+		{ID: 2, Name: "2product2", Price: 102220, Description: "2", SoldOut: true},
+		{ID: 3, Name: "product3", Price: 333333, Description: "3", SoldOut: false},
+	}
+	itemRepository := repositories.NewItemMemoryRepository(items)
+	itemService := services.NewItemService(itemRepository)
+	itemController := controller.NewItemController(itemService)
+
+	router := gin.Default()
+	router.GET("/items", itemController.FindAll)
+	router.Run("localhost:8080")
 }
