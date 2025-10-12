@@ -14,7 +14,10 @@ type IItemController interface {
 	FindAll(ctx *gin.Context)
 	FindbyId(ctx *gin.Context)
 	Create(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
+
 
 type itemController struct {
 	service services.IItemService
@@ -63,4 +66,40 @@ func (c *itemController) Create(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"data": newItem})
+}
+
+func (c *itemController) Update(ctx *gin.Context) {
+	itemID, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var input dto.UpdateItemInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	updatedItem, err := c.service.Update(uint(itemID), input)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"data": updatedItem})
+
+}
+
+func (c *itemController) Delete(ctx *gin.Context) {
+	itemID, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err = c.service.Delete(uint(itemID))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.Status(http.StatusOK)
 }
