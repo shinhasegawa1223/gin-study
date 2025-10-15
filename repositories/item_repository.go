@@ -2,37 +2,21 @@ package repositories
 
 import (
 	"errors"
-
 	"gin-fleamarket/models"
 )
 
 type IItemRepository interface {
 	FindAll() (*[]models.Item, error)
 	FindbyId(itemId uint) (*models.Item, error)
-	Create(item models.Item) (*models.Item, error)
-	Update(item models.Item) (*models.Item, error)
-	Delete(itemId uint) error
+	Create(NewItem models.Item) (*models.Item, error)
 }
 
 type ItemMemoryRepository struct {
-	items  []models.Item
-	nextID uint
+	items []models.Item
 }
 
 func NewItemMemoryRepository(items []models.Item) IItemRepository {
-	repo := &ItemMemoryRepository{
-		items:  make([]models.Item, len(items)),
-		nextID: 1,
-	}
-
-	copy(repo.items, items)
-	for _, item := range repo.items {
-		if item.ID >= repo.nextID {
-			repo.nextID = item.ID + 1
-		}
-	}
-
-	return repo
+	return &ItemMemoryRepository{items: items}
 }
 
 func (r *ItemMemoryRepository) FindAll() (*[]models.Item, error) {
@@ -46,44 +30,12 @@ func (r *ItemMemoryRepository) FindbyId(itemId uint) (*models.Item, error) {
 		}
 	}
 	return nil, errors.New("item not found")
-}
 
-func (r *ItemMemoryRepository) Create(item models.Item) (*models.Item, error) {
-	if item.ID == 0 {
-		item.ID = r.nextID
-		r.nextID++
-	} else {
-		for _, existing := range r.items {
-			if existing.ID == item.ID {
-				return nil, errors.New("item already exists")
-			}
-		}
-		if item.ID >= r.nextID {
-			r.nextID = item.ID + 1
-		}
-	}
-
-	r.items = append(r.items, item)
-	return &r.items[len(r.items)-1], nil
 }
 
 
-func (r *ItemMemoryRepository) Update(updateItem models.Item) (*models.Item, error) {
-	for i := range r.items {
-		if r.items[i].ID == updateItem.ID {
-			r.items[i] = updateItem
-			return &r.items[i], nil
-		}
-	}
-	return nil, errors.New("item not found")
-}
-
-func (r *ItemMemoryRepository) Delete(itemId uint) error {
-	for i := range r.items {
-		if r.items[i].ID == itemId {
-			r.items = append(r.items[:i], r.items[i+1:]...)
-			return nil
-		}
-	}
-	return errors.New("item not found")
+func(r *ItemMemoryRepository) Create(NewItem models.Item) (*models.Item, error){
+	NewItem.ID = uint(len(r.items) + 1)
+	r.items = append(r.items, NewItem)
+	return &NewItem, nil
 }

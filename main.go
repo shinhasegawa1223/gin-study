@@ -2,6 +2,7 @@ package main
 
 import (
 	"gin-fleamarket/controller"
+	"gin-fleamarket/infra"
 	"gin-fleamarket/models"
 	"gin-fleamarket/repositories"
 	"gin-fleamarket/services"
@@ -10,6 +11,7 @@ import (
 )
 
 func main() {
+	infra.Initialize()
 	items := []models.Item{
 		{ID: 1, Name: "product1", Price: 100, Description: "description1", SoldOut: false},
 		{ID: 2, Name: "2product2", Price: 102220, Description: "2", SoldOut: true},
