@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"gin-fleamarket/controller"
 	"gin-fleamarket/infra"
 	"gin-fleamarket/models"
@@ -12,12 +14,13 @@ import (
 
 func main() {
 	infra.Initialize()
-	items := []models.Item{
-		{ID: 1, Name: "product1", Price: 100, Description: "description1", SoldOut: false},
-		{ID: 2, Name: "2product2", Price: 102220, Description: "2", SoldOut: true},
-		{ID: 3, Name: "product3", Price: 333333, Description: "3", SoldOut: false},
+
+	db := infra.SetupDB()
+	if err := db.AutoMigrate(&models.Item{}); err != nil {
+		log.Fatalf("failed to migrate items table: %v", err)
 	}
-	itemRepository := repositories.NewItemMemoryRepository(items)
+
+	itemRepository := repositories.NewItemRepository(db)
 	itemService := services.NewItemService(itemRepository)
 	itemController := controller.NewItemController(itemService)
 
@@ -27,6 +30,8 @@ func main() {
 	router.POST("/items", itemController.Create)
 	router.PUT("/items/:id", itemController.Update)
 	router.DELETE("/items/:id", itemController.Delete)
-	router.Run("localhost:8080")
 
+	if err := router.Run("localhost:8080"); err != nil {
+		log.Fatalf("failed to start server: %v", err)
+	}
 }

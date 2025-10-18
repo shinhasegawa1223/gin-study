@@ -13,14 +13,15 @@ import (
 	"gin-fleamarket/services"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func TestGetItemByIDReturnsOK(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	items := []models.Item{
-		{ID: 1, Name: "product1", Price: 100, Description: "description1", SoldOut: false},
-		{ID: 2, Name: "product2", Price: 200, Description: "description2", SoldOut: false},
+		{Model: gorm.Model{ID: 1}, Name: "product1", Price: 100, Description: "description1", SoldOut: false},
+		{Model: gorm.Model{ID: 2}, Name: "product2", Price: 200, Description: "description2", SoldOut: false},
 	}
 
 	itemRepository := repositories.NewItemMemoryRepository(items)
